@@ -35,15 +35,28 @@ void board_cout(char board[8][8]) {
 	cout << "+-----------------+" << endl;
 }
 
+pair<int, int> findCoord(string point) {
+    int col = '8'-point[1];
+    int row = point[0]-'a';
+
+    return {col, row};
+}
+
 void move_piece(string from, string to) {
-    // convert to array indexs
-    // no move validation yet
+    // TODO: validate move
+    pair<int, int> f = findCoord(from);
+    pair<int, int> t = findCoord(to);
+    if (board[f.first][f.second] != '.') {
+        board[t.first][t.second] = board[f.first][f.second];
+        board[f.first][f.second] = '.';
+    }
 }
 
 int main() {
-	board_cout(board);
-
+    
 	// move pawn
+    move_piece("a2", "a4");
+	board_cout(board);
 
 	return 0;
 }
