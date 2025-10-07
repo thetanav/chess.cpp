@@ -1,6 +1,18 @@
-// user - tanavposwal939
+// github - thetanav
+// x - tanavtwt
+
+#include <cstdlib>
 #include <bits/stdc++.h>
 using namespace std;
+
+void clearScreen()
+{
+#ifdef _WIN32
+    system("cls"); // Windows
+#else
+    system("clear"); // Linux / macOS
+#endif
+}
 
 // white - small
 // black - capital
@@ -233,6 +245,7 @@ int main()
 
     while (run)
     {
+        clearScreen();
         board_cout(board);
 
         if (humanTurn(run))

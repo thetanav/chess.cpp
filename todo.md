@@ -1,2 +1,3 @@
 - [ ] board must be passed by reference
 - [ ] fix validate move bugs
+- [ ] show all the moves as lis on right side
