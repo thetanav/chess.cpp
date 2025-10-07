@@ -1,0 +1,2 @@
+- [ ] board must be passed by reference
+- [ ] fix validate move bugs
