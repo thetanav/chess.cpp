@@ -53,6 +53,12 @@ map<char, vector<pair<int, int>>> rules = {
     {'K', {{-1, -1}, {-1, 1}, {1, -1}, {1, 1}, {-1, 0}, {1, 0}, {0, -1}, {0, 1}}},
 };
 
+map<char, char> pieces = {
+    // https://en.wikipedia.org/wiki/Chess_symbols_in_Unicode
+}
+
+// make a chess engine like https://github.com/datavorous/sameshi/blob/master/readable/sameshi.h
+
 void board_cout(char board[8][8])
 {
     cout << endl
