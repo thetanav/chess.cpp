@@ -53,9 +53,8 @@ map<char, vector<pair<int, int>>> rules = {
     {'K', {{-1, -1}, {-1, 1}, {1, -1}, {1, 1}, {-1, 0}, {1, 0}, {0, -1}, {0, 1}}},
 };
 
-map<char, char> pieces = {
-    // https://en.wikipedia.org/wiki/Chess_symbols_in_Unicode
-}
+map<char, string> pieces = {
+    {'P', "♙"}, {'p', "♟"}, {'N', "♘"}, {'n', "♞"}, {'B', "♗"}, {'b', "♝"}, {'R', "♖"}, {'r', "♜"}, {'Q', "♕"}, {'q', "♛"}, {'K', "♔"}, {'k', "♚"}};
 
 // make a chess engine like https://github.com/datavorous/sameshi/blob/master/readable/sameshi.h
 
@@ -73,7 +72,7 @@ void board_cout(char board[8][8])
         {
             if (board[i][j] != '.')
             {
-                cout << board[i][j] << " ";
+                cout << pieces[board[i][j]] << " ";
             }
             else
             {
