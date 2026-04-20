@@ -1,264 +1,223 @@
-// github - thetanav
-// x - tanavtwt
-
-#include <cstdlib>
 #include <bits/stdc++.h>
 using namespace std;
-
-void clearScreen()
+vector<string> b = {"rnbqkbnr", "pppppppp", "........", "........", "........", "........", "PPPPPPPP", "RNBQKBNR"};
+bool W(char c) { return isupper((unsigned char)c); }
+bool I(int r, int c) { return r >= 0 && r < 8 && c >= 0 && c < 8; }
+int V(char c)
 {
-#ifdef _WIN32
-    system("cls"); // Windows
-#else
-    system("clear"); // Linux / macOS
-#endif
-}
-
-// white - small
-// black - capital
-
-char board[8][8] = {
-    {'R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R'},
-    {'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P'},
-    {'.', '.', '.', '.', '.', '.', '.', '.'},
-    {'.', '.', '.', '.', '.', '.', '.', '.'},
-    {'.', '.', '.', '.', '.', '.', '.', '.'},
-    {'.', '.', '.', '.', '.', '.', '.', '.'},
-    {'p', 'p', 'p', 'p', 'p', 'p', 'p', 'p'},
-    {'r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'}};
-
-map<char, vector<pair<int, int>>> rules = {
-    // Pawn (handled separately, since direction depends on color)
-    {'p', {{1, 0}, {1, 1}, {1, -1}}},    // black pawn moves down (+1 row)
-    {'P', {{-1, 0}, {-1, 1}, {-1, -1}}}, // white pawn moves up (-1 row)
-
-    // Knight (L-shape)
-    {'n', {{-2, -1}, {-2, 1}, {-1, -2}, {-1, 2}, {1, -2}, {1, 2}, {2, -1}, {2, 1}}},
-    {'N', {{-2, -1}, {-2, 1}, {-1, -2}, {-1, 2}, {1, -2}, {1, 2}, {2, -1}, {2, 1}}},
-
-    // Bishop (diagonals)
-    {'b', {{-1, -1}, {-1, 1}, {1, -1}, {1, 1}}},
-    {'B', {{-1, -1}, {-1, 1}, {1, -1}, {1, 1}}},
-
-    // Rook (straight lines)
-    {'r', {{-1, 0}, {1, 0}, {0, -1}, {0, 1}}},
-    {'R', {{-1, 0}, {1, 0}, {0, -1}, {0, 1}}},
-
-    // Queen (rook + bishop combined)
-    {'q', {{-1, -1}, {-1, 1}, {1, -1}, {1, 1}, {-1, 0}, {1, 0}, {0, -1}, {0, 1}}},
-    {'Q', {{-1, -1}, {-1, 1}, {1, -1}, {1, 1}, {-1, 0}, {1, 0}, {0, -1}, {0, 1}}},
-
-    // King (one step in any direction)
-    {'k', {{-1, -1}, {-1, 1}, {1, -1}, {1, 1}, {-1, 0}, {1, 0}, {0, -1}, {0, 1}}},
-    {'K', {{-1, -1}, {-1, 1}, {1, -1}, {1, 1}, {-1, 0}, {1, 0}, {0, -1}, {0, 1}}},
-};
-
-map<char, string> pieces = {
-    {'P', "♙"}, {'p', "♟"}, {'N', "♘"}, {'n', "♞"}, {'B', "♗"}, {'b', "♝"}, {'R', "♖"}, {'r', "♜"}, {'Q', "♕"}, {'q', "♛"}, {'K', "♔"}, {'k', "♚"}};
-
-// make a chess engine like https://github.com/datavorous/sameshi/blob/master/readable/sameshi.h
-
-void board_cout(char board[8][8])
-{
-    cout << endl
-         << " +-----------------+" << endl;
-    for (int i = 0; i < 8; i++)
+    switch (tolower(c))
     {
-        // border
-        cout << (8 - i);
-        cout << "| ";
-
-        for (int j = 0; j < 8; j++)
+    case 'p':
+        return 1;
+    case 'n':
+    case 'b':
+        return 3;
+    case 'r':
+        return 5;
+    case 'q':
+        return 9;
+    case 'k':
+        return 99;
+    default:
+        return 0;
+    }
+}
+pair<int, int> K(const vector<string> &g, bool w)
+{
+    char k = w ? 'K' : 'k';
+    for (int r = 0; r < 8; r++)
+        for (int c = 0; c < 8; c++)
+            if (g[r][c] == k)
+                return {r, c};
+    return {-1, -1};
+}
+void P()
+{
+    cout << "\n +-----------------+\n";
+    for (int r = 0; r < 8; r++)
+    {
+        cout << 8 - r << "| ";
+        for (char x : b[r])
+            cout << (x == '.' ? "  " : string(1, x) + " ");
+        cout << "|\n";
+    }
+    cout << " +-----------------+\n   a b c d e f g h\n\n";
+}
+int E(const vector<string> &g)
+{
+    int s = 0;
+    for (auto &r : g)
+        for (char c : r)
+            if (c != '.')
+                s += W(c) ? V(c) : -V(c);
+    return s;
+}
+bool A(const vector<string> &g, int r, int c, bool w)
+{
+    int d = w ? -1 : 1;
+    if (I(r + d, c - 1) && g[r + d][c - 1] == (w ? 'P' : 'p'))
+        return 1;
+    if (I(r + d, c + 1) && g[r + d][c + 1] == (w ? 'P' : 'p'))
+        return 1;
+    int n[8][2] = {{-2, -1}, {-2, 1}, {-1, -2}, {-1, 2}, {1, -2}, {1, 2}, {2, -1}, {2, 1}}, k[8][2] = {{-1, -1}, {-1, 0}, {-1, 1}, {0, -1}, {0, 1}, {1, -1}, {1, 0}, {1, 1}}, r1[4][2] = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}}, b1[4][2] = {{-1, -1}, {-1, 1}, {1, -1}, {1, 1}};
+    for (auto &m : n)
+        if (I(r + m[0], c + m[1]) && g[r + m[0]][c + m[1]] == (w ? 'N' : 'n'))
+            return 1;
+    for (auto &m : k)
+        if (I(r + m[0], c + m[1]) && g[r + m[0]][c + m[1]] == (w ? 'K' : 'k'))
+            return 1;
+    for (auto &m : r1)
+    {
+        int x = r, y = c;
+        while (I(x += m[0], y += m[1]))
         {
-            if (board[i][j] != '.')
-            {
-                cout << pieces[board[i][j]] << " ";
-            }
-            else
-            {
-                cout << "  ";
-            }
+            char p = g[x][y];
+            if (p == '.')
+                continue;
+            if (W(p) == w && (tolower(p) == 'r' || tolower(p) == 'q'))
+                return 1;
+            break;
         }
-
-        cout << "|" << endl;
     }
-    cout << " +-----------------+" << endl;
-    cout << "   a b c d e f g h" << endl
-         << endl;
-}
-
-pair<int, int> findCoord(string notation)
-{
-    int row = notation[0] - 'a';
-    int col = '8' - notation[1];
-
-    return {col, row};
-}
-
-string makeNotation(pair<int, int> coord)
-{
-    string notation = "";
-
-    notation += coord.first + 'a';
-    notation += '8' + coord.second;
-
-    return notation;
-}
-
-bool isValidMove(string from, string to, char board[8][8])
-{
-    pair<int, int> fromCoord = findCoord(from);
-    pair<int, int> toCoord = findCoord(to);
-
-    int fromRow = fromCoord.first;
-    int fromCol = fromCoord.second;
-    int toRow = toCoord.first;
-    int toCol = toCoord.second;
-
-    // get the piece
-    char piece = board[fromRow][fromCol];
-    char dest = board[toRow][toCol];
-
-    if (piece == ' ')
-        return false;
-
-    int dx = toRow - fromRow;
-    int dy = toCol - fromCol;
-
-    // Normalize direction for sliding pieces
-    int sdx = (dx == 0 ? 0 : dx / abs(dx));
-    int sdy = (dy == 0 ? 0 : dy / abs(dy));
-
-    // Pawn special case
-    if (tolower(piece) == 'p')
+    for (auto &m : b1)
     {
-        bool isWhite = isupper(piece);
-        int dir = isWhite ? -1 : 1;
-
-        // Move forward
-        if (dy == 0 && dest == ' ' && dx == dir)
-            return true;
-
-        // Double move
-        if (dy == 0 && dest == ' ' &&
-            ((isWhite && fromRow == 6 && dx == -2) ||
-             (!isWhite && fromRow == 1 && dx == 2)))
-            return true;
-
-        // Capture diagonally
-        if (abs(dy) == 1 && dx == dir && dest != ' ')
-            return true;
-
-        return false;
-    }
-
-    // Knight, King: single-step moves
-    if (tolower(piece) == 'n' || tolower(piece) == 'k')
-    {
-        for (auto m : rules[piece])
+        int x = r, y = c;
+        while (I(x += m[0], y += m[1]))
         {
-            if (dx == m.first && dy == m.second)
-                return true;
+            char p = g[x][y];
+            if (p == '.')
+                continue;
+            if (W(p) == w && (tolower(p) == 'b' || tolower(p) == 'q'))
+                return 1;
+            break;
         }
-        return false;
     }
-
-    // Sliding pieces (bishop, rook, queen)
-    if (tolower(piece) == 'b' || tolower(piece) == 'r' || tolower(piece) == 'q')
-    {
-        bool validDir = false;
-        for (auto m : rules[piece])
+    return 0;
+}
+vector<pair<string, vector<string>>> M(const vector<string> &g, bool w)
+{
+    vector<pair<string, vector<string>>> m;
+    auto add = [&](int fr, int fc, int tr, int tc, char p = 0)
+    {if(!I(tr,tc))return;char x=g[fr][fc],t=g[tr][tc];if(t!='.'&&W(t)==w)return;auto h=g;h[fr][fc]='.';h[tr][tc]=p?p:x;auto [kr,kc]=K(h,w);if(!A(h,kr,kc,!w)){string s; s+=char('a'+fc); s+=char('8'-fr); s+=char('a'+tc); s+=char('8'-tr); if(p)s+=tolower(p); m.push_back({s,h});} };
+    for (int r = 0; r < 8; r++)
+        for (int c = 0; c < 8; c++)
         {
-            if (sdx == m.first && sdy == m.second)
+            char p = g[r][c];
+            if (p == '.' || W(p) != w)
+                continue;
+            int d = w ? -1 : 1;
+            switch (tolower(p))
             {
-                validDir = true;
+            case 'p':
+            {
+                int nr = r + d;
+                if (I(nr, c) && g[nr][c] == '.')
+                {
+                    add(r, c, nr, c, (nr == 0 || nr == 7) ? (w ? 'Q' : 'q') : 0);
+                    if ((w && r == 6) || (!w && r == 1))
+                    {
+                        int nr2 = r + 2 * d;
+                        if (g[nr2][c] == '.')
+                            add(r, c, nr2, c);
+                    }
+                }
+                for (int dc : {-1, 1})
+                {
+                    int nc = c + dc;
+                    if (I(nr, nc) && g[nr][nc] != '.' && W(g[nr][nc]) != w)
+                        add(r, c, nr, nc, (nr == 0 || nr == 7) ? (w ? 'Q' : 'q') : 0);
+                }
                 break;
             }
+            case 'n':
+            {
+                int a[8][2] = {{-2, -1}, {-2, 1}, {-1, -2}, {-1, 2}, {1, -2}, {1, 2}, {2, -1}, {2, 1}};
+                for (auto &m : a)
+                    add(r, c, r + m[0], c + m[1]);
+                break;
+            }
+            case 'b':
+            case 'r':
+            case 'q':
+            {
+                int x[8][2] = {{-1, -1}, {-1, 1}, {1, -1}, {1, 1}, {-1, 0}, {1, 0}, {0, -1}, {0, 1}}, s = tolower(p) == 'b' ? 0 : tolower(p) == 'r' ? 4
+                                                                                                                                                    : 0,
+                    e = tolower(p) == 'b' ? 4 : tolower(p) == 'r' ? 8
+                                                                  : 8;
+                for (int i = s; i < e; i++)
+                {
+                    int dr = x[i][0], dc = x[i][1], rr = r + dr, cc = c + dc;
+                    while (I(rr, cc))
+                    {
+                        if (g[rr][cc] == '.')
+                            add(r, c, rr, cc);
+                        else
+                        {
+                            if (W(g[rr][cc]) != w)
+                                add(r, c, rr, cc);
+                            break;
+                        }
+                        rr += dr;
+                        cc += dc;
+                    }
+                }
+                break;
+            }
+            case 'k':
+            {
+                for (int dr = -1; dr <= 1; dr++)
+                    for (int dc = -1; dc <= 1; dc++)
+                        if (dr || dc)
+                            add(r, c, r + dr, c + dc);
+                break;
+            }
+            }
         }
-        if (!validDir)
-            return false;
-
-        // Check path is clear
-        int r = fromRow + sdx;
-        int c = fromCol + sdy;
-        while (r != toRow || c != toCol)
-        {
-            if (board[r][c] != ' ')
-                return false;
-            r += sdx;
-            c += sdy;
-        }
-        return true;
-    }
-
-    return false;
+    return m;
 }
-
-bool move_piece(string from, string to, char board[8][8])
-{
-    // if (!isValidMove(from, to, board))
-    // {
-    //     cout << "^ Invalid move: " << from << to << endl;
-    //     return false;
-    // }
-
-    pair<int, int> f = findCoord(from);
-    pair<int, int> t = findCoord(to);
-    if (board[f.first][f.second] != '.')
-    {
-        board[t.first][t.second] = board[f.first][f.second];
-        board[f.first][f.second] = '.';
-    }
-    return true;
-}
-
-bool humanTurn(bool &run)
-{
-    cout << "---- YOURs TURN (ex: a2a4, q to quit) ----" << endl;
-
-    string in;
-    string from;
-    string to;
-    cout << ">> ";
-    cin >> in; // a2a4
-
-    if (in == "q")
-    {
-        run = false;
-        return false;
-    }
-
-    from = in.substr(0, 2);
-    to = in.substr(2, 2);
-
-    if (!move_piece(from, to, board))
-        return false;
-
-    return true;
-}
-
-bool robotTurn(bool &run)
-{
-    cout << "## Robot pseudo moved pieces" << endl;
-    return true;
-}
-
 int main()
 {
-
-    bool run = true;
-
-    while (run)
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    bool w = 1;
+    for (;;)
     {
-        clearScreen();
-        board_cout(board);
-
-        if (humanTurn(run))
-            robotTurn(run);
-
-        if (run == false)
+        P();
+        auto m = M(b, w);
+        if (m.empty())
+        {
+            auto [kr, kc] = K(b, w);
+            if (A(b, kr, kc, !w))
+                cout << (w ? "Black" : "White") << " wins by checkmate.\n";
+            else
+                cout << "Stalemate.\n";
             break;
+        }
+        if (w)
+        {
+            cout << "move: ";
+            string s;
+            getline(cin, s);
+            for (auto &ch : s)
+                ch = tolower(ch);
+            if (s == "q")
+                break;
+            auto it = find_if(m.begin(), m.end(), [&](auto &z)
+                              { return z.first == s; });
+            if (it == m.end())
+            {
+                cout << "illegal\n";
+                continue;
+            }
+            b = it->second;
+        }
+        else
+        {
+            auto it = min_element(m.begin(), m.end(), [](auto &a, auto &c)
+                                  { return E(a.second) < E(c.second); });
+            b = it->second;
+            cout << "computer: " << it->first << "\n";
+        }
+        w = !w;
     }
-
-    return 0;
 }
